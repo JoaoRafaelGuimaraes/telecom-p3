@@ -9,8 +9,23 @@ module mkSFDLocator(FrameBitProcessor);
 
     interface Put in;
         method Action put(Maybe#(Bit#(1)) in);
-            // TODO: your code here
+            if (in matches tagged Valid .b) begin
+                if (afterSfd) begin
+                    outFifo.enq(Valid(b));
+                end else begin
+                    if (prev == 1 && b == 1) begin
+                        afterSfd <= True;
+                    end
+                    prev <= b;
+                end
+            end else begin
+                afterSfd <= False;
+                prev <= 0;
+                outFifo.enq(Invalid);
+            end
         endmethod
     endinterface
+
     interface out = toGet(outFifo);
 endmodule
+
